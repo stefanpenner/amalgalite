@@ -6,7 +6,7 @@ require 'rbconfig'
 $ruby = ARGV.shift if ARGV[0]
 
 # make available table and column meta data api
-$CFLAGS += " -DSQLITE_ENABLE_COLUMN_METADATA=1"  
+$CFLAGS += " -DSQLITE_ENABLE_COLUMN_METADATA=1"
 $CFLAGS += " -DSQLITE_ENABLE_RTREE=1"
 $CFLAGS += " -DSQLITE_ENABLE_FTS3=1"
 $CFLAGS += " -DSQLITE_ENABLE_FTS3_PARENTHESIS=1"
@@ -20,17 +20,19 @@ else
 end
 
 # remove the -g flags  if it exists
-%w[ -ggdb -g ].each do |debug|
-  $CFLAGS = $CFLAGS.gsub(/#{debug}/,'')
-  RbConfig::MAKEFILE_CONFIG['debugflags'] = Config::MAKEFILE_CONFIG['debugflags'].gsub(/#{debug}/,'')   if Config::MAKEFILE_CONFIG['debugflags']
+%w[ -ggdb -g].each do |debug|
+  regex = /#{debug}\d?/
+  $CFLAGS = $CFLAGS.gsub(regex,'')
+	if Config::MAKEFILE_CONFIG['debugflags']
+    RbConfig::MAKEFILE_CONFIG['debugflags'] = Config::MAKEFILE_CONFIG['debugflags'].gsub(regex,'')
+	end
 end
 
-%w[ shorten-64-to-32 write-strings ].each do |warning|
-  $CFLAGS = $CFLAGS.gsub(/-W#{warning}/,'')
-  Config::MAKEFILE_CONFIG['warnflags'] = Config::MAKEFILE_CONFIG['warnflags'].gsub(/-W#{warning}/,'') if Config::MAKEFILE_CONFIG['warnflags'] 
+%w[ shorten-64-to-32 write-strings incompatible-pointer-types].each do |warning|
+  regex = /-W#{warning}/
+  $CFLAGS = $CFLAGS.gsub(regex,'')
+  Config::MAKEFILE_CONFIG['warnflags'] = Config::MAKEFILE_CONFIG['warnflags'].gsub(regex,'') if Config::MAKEFILE_CONFIG['warnflags']
 end
-
-
 
 subdir = RUBY_VERSION.sub(/\.\d$/,'')
 create_makefile("amalgalite/#{subdir}/amalgalite3")
